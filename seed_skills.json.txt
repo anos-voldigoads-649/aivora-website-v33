@@ -1,0 +1,67 @@
+{
+  "skills": [
+    {
+      "field": "web_development",
+      "title": "Full-Stack Web Developer",
+      "steps": [
+        {
+          "title": "HTML & CSS",
+          "resources": [
+            "https://developer.mozilla.org/",
+            "https://www.freecodecamp.org/"
+          ]
+        },
+        {
+          "title": "JavaScript",
+          "resources": [
+            "https://javascript.info/",
+            "https://www.freecodecamp.org/"
+          ]
+        },
+        {
+          "title": "React",
+          "resources": [
+            "https://reactjs.org/"
+          ]
+        },
+        {
+          "title": "Backend (Node.js / Firebase)",
+          "resources": [
+            "https://nodejs.org/",
+            "https://firebase.google.com/"
+          ]
+        }
+      ]
+    },
+    {
+      "field": "data_science",
+      "title": "Data Science Roadmap",
+      "steps": [
+        {
+          "title": "Python",
+          "resources": [
+            "https://www.python.org/"
+          ]
+        },
+        {
+          "title": "Pandas",
+          "resources": [
+            "https://pandas.pydata.org/"
+          ]
+        },
+        {
+          "title": "NumPy",
+          "resources": [
+            "https://numpy.org/"
+          ]
+        },
+        {
+          "title": "Machine Learning",
+          "resources": [
+            "https://scikit-learn.org/"
+          ]
+        }
+      ]
+    }
+  ]
+}
