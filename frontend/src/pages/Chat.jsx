@@ -20,7 +20,9 @@ import { ref as storageRef, uploadBytesResumable, getDownloadURL } from "firebas
   - Replace AI_ENDPOINT with your backend endpoint or OpenAI proxy (serverless function)
   - If you use OpenAI directly from client (NOT recommended), you must secure keys via backend.
 */
-const AI_ENDPOINT = import.meta.env.VITE_AI_ENDPOINT || "https://nice-lime-wombat-tam.cyclic.app/gpt";
+const AI_ENDPOINT = "/.netlify/functions/chat"
+
+
 
 export default function ChatV4() {
   const { user } = useAuth(); // user from AuthContext
