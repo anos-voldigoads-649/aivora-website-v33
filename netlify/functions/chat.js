@@ -1,84 +1,81 @@
-// netlify/functions/chat.js
-
-export const handler = async (event, context) => {
+export const handler = async (event) => {
   try {
-    // Parse body
-    const { prompt } = JSON.parse(event.body || "{}");
+    const body = JSON.parse(event.body || "{}");
+    const { prompt } = body;
 
-    if (!prompt || prompt.trim().length === 0) {
+    if (!prompt) {
       return {
         statusCode: 400,
-        body: JSON.stringify({ error: "Prompt is required." }),
+        body: JSON.stringify({ error: "Missing prompt" }),
       };
     }
 
-    const apiKey = process.env.OPENAI_API_KEY;
+    const apiKey = process.env.OPENROUTER_API_KEY;
 
     if (!apiKey) {
-      console.error("❌ Missing OpenAI API Key in environment variables.");
+      console.error("❌ Missing OPENROUTER_API_KEY");
       return {
         statusCode: 500,
-        body: JSON.stringify({ error: "Server missing API key." }),
+        body: JSON.stringify({ error: "Server error: Missing API key" }),
       };
     }
 
-    // Call OpenAI API
-    const response = await fetch("https://api.openai.com/v1/chat/completions", {
+    // 🔥 ADVANCED SYSTEM MESSAGE
+    const systemPrompt = `
+You are AIVORA — an intelligent, friendly, highly capable AI assistant.
+Rules:
+- Be extremely helpful
+- Give structured answers
+- Never hallucinate facts
+- Provide step-by-step reasoning when useful
+- Be polite and avoid harmful content
+- Support coding, debugging, study help, and real-world tasks
+`;
+
+    const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
       method: "POST",
       headers: {
         "Authorization": `Bearer ${apiKey}`,
         "Content-Type": "application/json",
+        "HTTP-Referer": "https://your-site.netlify.app",
+        "X-Title": "Aivora AI on Netlify"
       },
       body: JSON.stringify({
-        model: "gpt-4.1-mini",
+        model: "openai/gpt-4.1-mini",  // 🔥 Stable + fast + smart
+        temperature: 0.7,
+        max_tokens: 1000,
         messages: [
-          {
-            role: "system",
-            content:
-              "You are Aivora, a helpful, smart, polite AI assistant. Provide clear responses.",
-          },
-          { role: "user", content: prompt },
-        ],
+          { role: "system", content: systemPrompt },
+          { role: "user", content: prompt }
+        ]
       }),
     });
 
-    // If OpenAI returns a non-200 error
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error("❌ OpenAI Error:", errorText);
+    const data = await response.json();
 
+    // Log OpenRouter errors clearly
+    if (data.error) {
+      console.error("❌ OpenRouter API Error:", data.error);
       return {
-        statusCode: response.status,
-        body: JSON.stringify({
-          error: "OpenAI API error",
-          detail: errorText,
-        }),
+        statusCode: 500,
+        body: JSON.stringify({ error: data.error.message || "AI request failed" }),
       };
     }
 
-    const data = await response.json();
-
     const aiText =
-      data?.choices?.[0]?.message?.content?.trim() ||
-      "⚠️ Aivora could not generate a response.";
+      data.choices?.[0]?.message?.content?.trim() ||
+      "⚠️ AI returned no response.";
 
-    // Success
     return {
       statusCode: 200,
-      headers: {
-        "Content-Type": "application/json",
-      },
       body: JSON.stringify({ response: aiText }),
     };
-  } catch (error) {
-    console.error("❌ Function failure:", error);
 
+  } catch (err) {
+    console.error("❌ Server Crash:", err);
     return {
       statusCode: 500,
-      body: JSON.stringify({
-        error: "Internal server error",
-        detail: error.message,
-      }),
+      body: JSON.stringify({ error: "Internal server error: " + err.message }),
     };
   }
 };
