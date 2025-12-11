@@ -14,7 +14,8 @@ import {
 import { ref as storageRef, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 
 /* NETLIFY FUNCTION ENDPOINT */
-const AI_ENDPOINT = `${window.location.origin}/.netlify/functions/chat`;
+const AI_ENDPOINT = "https://aivora-v44.netlify.app/.netlify/functions/chat";
+
 
 export default function ChatV4() {
   const { user } = useAuth();

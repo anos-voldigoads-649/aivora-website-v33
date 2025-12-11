@@ -1,4 +1,17 @@
 export const handler = async (event) => {
+  // --- CORS preflight support ---
+  if (event.httpMethod === "OPTIONS") {
+    return {
+      statusCode: 200,
+      headers: {
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Headers": "Content-Type",
+        "Access-Control-Allow-Methods": "POST, OPTIONS",
+      },
+      body: "OK",
+    };
+  }
+
   try {
     const body = JSON.parse(event.body || "{}");
     const { prompt } = body;
@@ -6,16 +19,23 @@ export const handler = async (event) => {
     if (!prompt) {
       return {
         statusCode: 400,
+        headers: {
+          "Access-Control-Allow-Origin": "*",
+        },
         body: JSON.stringify({ error: "Missing prompt" }),
       };
     }
 
+    // ✅ Correct key declaration
     const apiKey = process.env.OPENROUTER_API_KEY;
 
     if (!apiKey) {
       console.error("❌ Missing OPENROUTER_API_KEY");
       return {
         statusCode: 500,
+        headers: {
+          "Access-Control-Allow-Origin": "*",
+        },
         body: JSON.stringify({ error: "Server error: Missing API key" }),
       };
     }
@@ -28,7 +48,6 @@ Rules:
 - Give structured answers
 - Never hallucinate facts
 - Provide step-by-step reasoning when useful
-- Be polite and avoid harmful content
 - Support coding, debugging, study help, and real-world tasks
 `;
 
@@ -37,28 +56,30 @@ Rules:
       headers: {
         "Authorization": `Bearer ${apiKey}`,
         "Content-Type": "application/json",
-        "HTTP-Referer": "https://your-site.netlify.app",
-        "X-Title": "Aivora AI on Netlify"
+        "HTTP-Referer": "https://aivora-v44.netlify.app",
+        "X-Title": "Aivora AI",
       },
       body: JSON.stringify({
-        model: "openai/gpt-4.1-mini",  // 🔥 Stable + fast + smart
+        model: "openai/gpt-4.1-mini",
         temperature: 0.7,
         max_tokens: 1000,
         messages: [
           { role: "system", content: systemPrompt },
-          { role: "user", content: prompt }
-        ]
+          { role: "user", content: prompt },
+        ],
       }),
     });
 
     const data = await response.json();
 
-    // Log OpenRouter errors clearly
     if (data.error) {
       console.error("❌ OpenRouter API Error:", data.error);
       return {
         statusCode: 500,
-        body: JSON.stringify({ error: data.error.message || "AI request failed" }),
+        headers: {
+          "Access-Control-Allow-Origin": "*",
+        },
+        body: JSON.stringify({ error: data.error.message }),
       };
     }
 
@@ -68,6 +89,9 @@ Rules:
 
     return {
       statusCode: 200,
+      headers: {
+        "Access-Control-Allow-Origin": "*",
+      },
       body: JSON.stringify({ response: aiText }),
     };
 
@@ -75,7 +99,12 @@ Rules:
     console.error("❌ Server Crash:", err);
     return {
       statusCode: 500,
-      body: JSON.stringify({ error: "Internal server error: " + err.message }),
+      headers: {
+        "Access-Control-Allow-Origin": "*",
+      },
+      body: JSON.stringify({
+        error: "Internal server error: " + err.message,
+      }),
     };
   }
 };
